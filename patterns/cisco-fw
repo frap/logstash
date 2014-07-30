@@ -1,0 +1,44 @@
+# ASA-1-106100
+CISCOFW1 access-list %{DATA:policy_id} %{WORD:action} %{WORD:protocol} %{DATA}/%{IP:src_ip}\(%{DATA:src_port}\) -> %{DATA}/%{IP:dst_ip}\(%{DATA:dst_port}\)
+# ASA-3-710003
+CISCOFW2 %{WORD:action} %{WORD:protocol} type=%{INT}, code=%{INT} from %{IP:src_ip} on interface
+# ASA-3-710003
+CISCOFW3 %{WORD:protocol} access %{WORD:action} by ACL from %{IP:src_ip}/%{DATA:src_port} to %{DATA}:%{IP:dst_ip}/%{DATA:dst_port}
+# ASA-4-106023
+CISCOFW4 %{WORD:action} %{WORD:protocol} src %{DATA}:%{IP:src_ip}/%{DATA:src_port} dst %{DATA}:%{IP:dst_ip}/%{DATA:dst_port} by access-group %{DATA:policy_id}
+CISCOFW4b %{WORD:action} %{WORD:protocol} src %{DATA}:%{IP:src_ip} dst %{DATA}:%{IP:dst_ip} \(type %{INT}, code %{INT}\) by access-group %{DATA:policy_id}
+# ASA-6-106015
+CISCOFW5 Deny %{WORD:protocol} \(%{GREEDYDATA:action}\) from %{IP:src_ip}/%{DATA:src_port} to %{IP:dst_ip}/%{DATA:dst_port} flags
+# ASA-6-302013
+CISCOFW6 %{WORD:action} inbound %{WORD:protocol} connection %{INT} for %{DATA}:%{IP:src_ip}/%{DATA:src_port} \(%{IP:src_xlated_ip}/%{DATA:src_xlated_port}\) to %{DATA}:%{IP:dst_ip}/%{DATA:dst_port} \(%{IP:dst_xlated_ip}/%{DATA:dst_xlated_port}\)
+CISCOFW6b %{WORD:action} outbound %{WORD:protocol} connection %{INT} for %{DATA}:%{IP:dst_ip}/%{DATA:dst_port} \(%{IP:dst_xlated_ip}/%{DATA:dst_xlated_port}\) to %{DATA}:%{IP:src_ip}/%{DATA:src_port} \(%{IP:src_xlated_ip}/%{DATA:src_xlated_port}\)
+# ASA-7-710002 | ASA-7-710005
+CISCOFW7 %{WORD:protocol} (?:request|access) %{WORD:action} from %{IP:src_ip}/%{DATA:src_port} to %{DATA}:%{IP:dst_ip}/%{WORD:service}
+# ASA-6-302020
+CISCOFW8 %{WORD:action} (?:inbound|outbound) %{WORD:protocol} connection for faddr %{IP:dst_ip}/%{INT} gaddr %{IP:src_xlated_ip}/%{INT} laddr %{IP:src_ip}
+# ASA-1-106021
+CISCOFW9 %{WORD:action} %{WORD:protocol} reverse path check from %{IP:src_ip} to %{IP:dst_ip} on interface
+# ASA-2-106006-7
+CISCOFW10 %{WORD:action} inbound %{WORD:protocol} from %{IP:src_ip}/%{DATA:src_port} to %{IP:dst_ip}/%{DATA:dst_port} (?:on interface|due to)
+# ASA-4-313004
+CISCOFW11 %{WORD:action} %{WORD:protocol} type=%{INT}, from (?:laddr )?%{IP:src_ip} on interface %{DATA} to %{IP:dst_ip}
+# ASA-2-106001
+CISCOFW12 (?:Inbound|Outbound) %{WORD:protocol} connection %{WORD:action} from %{IP:src_ip}/%{DATA:src_port} to %{IP:dst_ip}/%{DATA:dst_port} flags
+# ASA-3-106014
+CISCOFW13 %{WORD:action} (?:inbound|outbound) %{WORD:protocol} src %{DATA}:%{IP:src_ip} dst %{DATA}:%{IP:dst_ip}
+# ASA-4-419001
+CISCOFW14 %{WORD:action} %{WORD:protocol} packet from %{DATA}:%{IP:src_ip}(?:/%{DATA:src_port})? to %{DATA}:%{IP:dst_ip}(?:/%{DATA:dst_port})?
+# ASA-4-313005
+CISCOFW15 %ASA-4-313005: %{DATA:action} for %{WORD:protocol} error message: %{WORD} src %{DATA}:%{IP:src_ip} dst %{DATA}:%{IP:dst_ip} (?:\(type %{INT}, code %{INT}\))
+# PIX-3-710003
+CISCOFW16 %{WORD:protocol} access %{WORD:action} by ACL from %{IP:src_ip}/%{DATA:src_port} to %{DATA}:%{IP:dst_ip}/%{WORD:service}
+# ASA-4-500004
+CISCOFW17 %{WORD:action} transport field for protocol=%{WORD:protocol}, from %{IP:src_ip}/%{DATA:src_port} to %{IP:dst_ip}/%{DATA:dst_port}
+# ASA-6-305011 # dynamic NAT creation
+#CISCOFW00 %{WORD:action} dynamic %{WORD:protocol} translation from %{DATA}:%{IP:src_ip}/%{DATA:src_port} to %{DATA}:%{IP:src_xlated_ip}/%{DATA:src_xlated_port}
+# ASA-5-305013
+CISCOFW18 Connection for %{WORD:protocol} src %{DATA}:%{IP:src_ip} dst %{DATA}:%{IP:dst_ip} (?:\(type %{INT}, code %{INT}\) )?%{WORD:action} due to
+
+CISCOTIMESTAMP %{MONTH} +%{MONTHDAY}(?: %{YEAR})? %{TIME}
+CISCOTAG [A-Z0-9]+-%{INT}-(?:[A-Z0-9_]+)
+CISCOFWTAG (?:ASA|PIX|FWSM)-%{INT}-(?:[A-Z0-9_]+)

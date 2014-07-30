@@ -1,0 +1,62 @@
+SIP_HEADER [A-Z_]+
+
+ASTLEVEL (?:VERBOSE|ERROR|NOTICE|INFO|DEBUG|DTMF|WARNING)
+ASTLANGUAGE [a-z]{1,3}
+
+# Special pattern for "Ext." Logs
+ASTEXTNO [A-Za-z0-9_]+
+
+# Valid DTMF keys
+ASTDTMF [0-9#*]
+
+# Log source file (Normally a c file)
+ASTSRC [-a-z._0-9/]+
+
+# Registration info
+ASTREGISTRATION %{USERNAME}@%{IPORHOST}
+
+# Context
+ASTCONTEXTEXTENSION [A-Za-z0-9*#~_]+
+ASTCONTEXTNAME [-a-z0-9]+
+ASTCONTEXTPOSITION \d+
+ASTCONTEXT %{ASTCONTEXTEXTENSION}@%{ASTCONTEXTNAME}:%{ASTCONTEXTPOSITION}
+
+# Application
+ASTAPP [A-Z][A-Za-z0-9]+
+ASTAPP_AUDIOFILE [-a-zA-Z0-9_./]+
+
+# Interfaces
+AST_SIP_INTERFACE SIP/[-_A-Za-z0-9]+
+ASTINTERFACE %{AST_SIP_INTERFACE}
+
+# Channels
+ASTCHANNEL_SIP %{AST_SIP_INTERFACE}-[a-f0-9]+
+ASTCHANNEL_LOCAL Local/[-a-z0-9@;]+
+ASTCHANNEL (:?%{ASTCHANNEL_SIP}|%{ASTCHANNEL_LOCAL})
+
+# Different log content types
+ASTCONTENT_CHANNELEVENT1 (:?CDR updated on|Timeout on|Stopped music on hold on|Started music on hold, class '%{ASTAPP_AUDIOFILE}', on|(:?Begin|End) MixMonitor Recording) %{ASTCHANNEL:asterisk_channel}
+ASTCONTENT_CHANNELEVENT2 (Locally bridging )?%{ASTCHANNEL:asterisk_channel}.*%{ASTCHANNEL:asterisk_channel}
+ASTCONTENT_CHANNELEVENT3 %{ASTCHANNEL:asterisk_channel} is ringing
+ASTCONTENT_EXECUTE Executing \[%{ASTCONTEXT:asterisk_context}\] %{ASTAPP:asterisk_app}\("%{ASTCHANNEL:asterisk_channel}", "%{GREEDYDATA:asterisk_app_params}"\) in new stack
+ASTCONTENT_CHANNELJUMP Channel '%{ASTCHANNEL:asterisk_channel}' jumping out of macro '%{ASTCONTEXTNAME:asterisk_context}'
+ASTCONTENT_GOTO Goto \(%{ASTCONTEXTNAME:asterisk_context},%{ASTCONTEXTEXTENSION:asterisk_extension},%{ASTCONTEXTPOSITION:asterisk_context_position}\)
+ASTCONTENT_SIPCOSMARK Using SIP RTP CoS mark %{NUMBER}
+ASTCONTENT_ASTMANAGER Manager '%{USERNAME:asterisk_manager_name}' logged (:?off|on) from %{IPORHOST:asterisk_manager_host}
+ASTCONTENT_CDRUPDATE  on %{ASTCHANNEL:asterisk_channel}
+ASTCONTENT_PLAYAUDIO <%{ASTCHANNEL:asterisk_channel}> Playing '%{ASTAPP_AUDIOFILE:audiofile}' \(language '%{ASTLANGUAGE}'\)
+ASTCONTENT_REGISTRATION_TIMEOUT Registration for '%{ASTREGISTRATION}' timed out, trying again \(Attempt #%{NUMBER:asterisk_registration_attempt}\)
+ASTCONTENT_INVALID_EXTENSION Invalid extension '%{ASTCONTEXTEXTENSION:asterisk_extension}' in context '%{ASTCONTEXTNAME:asterisk_context}' on %{ASTCHANNEL}
+ASTCONTENT_CONNECTION_REFUSED Connect attempt from '%{IPORHOST:asterisk_connection_refused_host}' unable to authenticate
+ASTCONTENT_QUEUE_EVENT Added interface '%{ASTINTERFACE}' to queue '%{NOTSPACE:asterisk_queue}'
+ASTCONTENT_UNKNOWN_SIPMESSAGE Unable to parse %{SIP_HEADER:sip_header} message from %{ASTREGISTRATION:asterisk_external}
+ASTCONTENT_SPAWN Spawn extension \(%{ASTCONTEXTNAME:asterisk_context}, %{ASTCONTEXTEXTENSION:asterisk_extension}, %{ASTCONTEXTPOSITION:asterisk_context_position}\) exited .* on '%{ASTCHANNEL:asterisk_channel}'
+ASTCONTENT_USERINPUT User entered '%{DATA:asterisk_userinput}'
+ASTCONTENT_DTMF DTMF (:?begin|end)(:? passthrough| ignored)? '%{ASTDTMF:asterisk_dtmf_number}'(:? received)? on %{ASTCHANNEL}(:?, duration %{NUMBER:asterisk_dtmf_duration} ms)?
+ASTCONTENT [-=\s]*(:?%{ASTCONTENT_EXECUTE}|%{ASTCONTENT_CHANNELJUMP}|%{ASTCONTENT_GOTO}|%{ASTCONTENT_PLAYAUDIO}|%{ASTCONTENT_SPAWN}|%{ASTCONTENT_ASTMANAGER}|%{ASTCONTENT_DTMF}|%{ASTCONTENT_REGISTRATION_TIMEOUT}|%{ASTCONTENT_CHANNELEVENT1}|%{ASTCONTENT_CHANNELEVENT2}|%{ASTCONTENT_CHANNELEVENT3}|%{ASTCONTENT_INVALID_EXTENSION}|%{ASTCONTENT_CONNECTION_REFUSED}|%{ASTCONTENT_QUEUE_EVENT}|%{ASTCONTENT_USERINPUT}|%{ASTCONTENT_UNKNOWN_SIPMESSAGE}|%{ASTCONTENT_SIPCOSMARK}|%{GREEDYDATA})
+
+# different log types
+ASTLOG1 \[%{TIMESTAMP_ISO8601:timestamp}\] %{ASTLEVEL:severity}\[\d+\] %{ASTSRC:asterisk_src_file}:%{ASTCONTENT}
+ASTLOG2 \[%{TIMESTAMP_ISO8601:timestamp}\] %{ASTLEVEL:severity}\[\d+\] Ext. %{ASTEXTNO}: %{GREEDYDATA}
+ASTTIMEOUT Packet timed out after %{NUMBER}ms with no response
+ASTLOG ^(:?%{ASTLOG1}|%{ASTLOG2}|%{ASTTIMEOUT})
